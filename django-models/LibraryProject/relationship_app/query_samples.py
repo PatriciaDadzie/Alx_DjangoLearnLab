@@ -18,9 +18,9 @@ try:
 except Library.DoesNotExist:
     print(f"No library found with name {library_name}")
 
-# 3. Retrieve the librarian for a library
+# 3. Retrieve the librarian for a library (must use Librarian.objects.get)
 try:
-    librarian = library.librarian  # thanks to OneToOneField
+    librarian = Librarian.objects.get(library=library)
     print(f"Librarian of {library_name}: {librarian.name}")
-except Exception:
+except Librarian.DoesNotExist:
     print(f"No librarian assigned to {library_name}")
