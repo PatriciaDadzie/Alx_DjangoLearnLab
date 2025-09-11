@@ -3,7 +3,9 @@
 from django.contrib.auth.decorators import login_required, permission_required
 from django.shortcuts import render
 from .models import Book
-from .forms import BookSearchForm, ExampleForm  # Import both forms
+from .forms import BookSearchForm
+from .forms import ExampleForm
+  
 
 @login_required
 @permission_required('bookshelf.can_view', raise_exception=True)
