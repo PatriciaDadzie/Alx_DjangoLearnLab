@@ -1,4 +1,4 @@
-from pathlib import Path
+from pathlib import Path 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,7 +20,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    # Security middleware for CSP
+    # CSP Middleware for Content Security Policy
     'csp',
 
     # Custom apps
@@ -29,14 +29,14 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'csp.middleware.CSPMiddleware',  
-    'django.middleware.security.SecurityMiddleware',
+    'csp.middleware.CSPMiddleware',  # CSP Middleware to add Content-Security-Policy headers
+    'django.middleware.security.SecurityMiddleware',  # Security enhancements like SSL redirect
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',  # Prevent clickjacking
 ]
 
 ROOT_URLCONF = 'LibraryProject.urls'
@@ -91,52 +91,36 @@ AUTH_USER_MODEL = 'bookshelf.CustomUser'
 
 # === SECURITY SETTINGS ===
 
-# Enable browser XSS protection
+# Enable browser XSS filter and prevent rendering if an attack is detected
 SECURE_BROWSER_XSS_FILTER = True
 
-# Prevent the site from being rendered inside an iframe
+# Prevent site from being rendered inside an iframe to avoid clickjacking
 X_FRAME_OPTIONS = 'DENY'
 
 # Prevent MIME type sniffing
 SECURE_CONTENT_TYPE_NOSNIFF = True
 
-# Only send CSRF cookie over HTTPS
-CSRF_COOKIE_SECURE = True
+# Redirect all HTTP requests to HTTPS
+SECURE_SSL_REDIRECT = True  # Enforce HTTPS in production
 
-# Only send session cookie over HTTPS
+# Trust the proxy/load balancer header for detecting HTTPS requests
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# HTTP Strict Transport Security (HSTS) settings
+SECURE_HSTS_SECONDS = 31536000  # Cache HSTS for 1 year
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # Apply HSTS to all subdomains
+SECURE_HSTS_PRELOAD = True  # Allow domain to be included in browser preload list
+
+# Cookies will only be sent over HTTPS connections
+CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
 
-# Redirect all HTTP traffic to HTTPS
-SECURE_SSL_REDIRECT = True
+# === CONTENT SECURITY POLICY (CSP) SETTINGS ===
 
-# HTTP Strict Transport Security (HSTS)
-SECURE_HSTS_SECONDS = 31536000  # 1 year
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-SECURE_HSTS_PRELOAD = True
-
-# === CONTENT SECURITY POLICY (CSP) ===
 CSP_DEFAULT_SRC = ("'self'",)
 CSP_SCRIPT_SRC = ("'self'", 'https://cdnjs.cloudflare.com')
 CSP_STYLE_SRC = ("'self'", 'https://fonts.googleapis.com')
 CSP_FONT_SRC = ("'self'", 'https://fonts.gstatic.com')
-CSP_IMG_SRC = ("'self'", 'data:')  # Allow local images and base64-encoded
+CSP_IMG_SRC = ("'self'", 'data:')  # Allow images from self and base64 encoded images
 CSP_CONNECT_SRC = ("'self'",)
 CSP_OBJECT_SRC = ("'none'",)
-
-
-
-# SECURITY SETTINGS
-
-# Prevent the browser from guessing content types
-SECURE_CONTENT_TYPE_NOSNIFF = True
-
-# Enables the browser’s XSS filtering and prevents rendering if attack is detected
-SECURE_BROWSER_XSS_FILTER = True
-
-# Prevent clickjacking by not allowing rendering in frames
-X_FRAME_OPTIONS = 'DENY'
-
-# Ensure cookies are only sent over HTTPS
-CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_SECURE = True
-
