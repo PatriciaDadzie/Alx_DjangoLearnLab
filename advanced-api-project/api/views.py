@@ -1,71 +1,38 @@
-from rest_framework import generics, mixins, filters
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
+from rest_framework import generics, filters
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from django_filters.rest_framework import DjangoFilterBackend
 
 from .models import Book
 from .serializers import BookSerializer
 
 
-class BookListView(mixins.ListModelMixin,
-                   generics.GenericAPIView):
+class BookListCreateView(generics.ListCreateAPIView):
     """
-    ListView:
-    Handles retrieving all books (GET).
+    GET -> list all books
+    POST -> create a new book
     Supports filtering, searching, and ordering.
-    Accessible to everyone (read-only if not authenticated).
+    Read-only for unauthenticated users, 
+    authenticated users can create.
     """
     queryset = Book.objects.all()
     serializer_class = BookSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
 
-    # Add filtering, searching, ordering
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['title', 'author__name', 'publication_year']
     search_fields = ['title', 'author__name']
     ordering_fields = ['title', 'publication_year']
-    ordering = ['title']  # default ordering
-
-    def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
+    ordering = ['title']
 
 
-class BookCreateView(mixins.CreateModelMixin,
-                     generics.GenericAPIView):
+class BookDetailView(generics.RetrieveUpdateDestroyAPIView):
     """
-    CreateView:
-    Handles creating a new book (POST).
-    Restricted to authenticated users.
-    """
-    queryset = Book.objects.all()
-    serializer_class = BookSerializer
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request, *args, **kwargs):
-        return self.create(request, *args, **kwargs)
-
-
-class BookDetailView(mixins.RetrieveModelMixin,
-                     mixins.UpdateModelMixin,
-                     mixins.DestroyModelMixin,
-                     generics.GenericAPIView):
-    """
-    DetailView, UpdateView, DeleteView:
-    Handles retrieving, updating, and deleting a specific book.
+    GET -> retrieve a book
+    PUT/PATCH -> update a book
+    DELETE -> delete a book
     Read-only for unauthenticated users,
-    but authenticated users can modify or delete.
+    authenticated users can modify or delete.
     """
     queryset = Book.objects.all()
     serializer_class = BookSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
-
-    def get(self, request, *args, **kwargs):
-        return self.retrieve(request, *args, **kwargs)
-
-    def put(self, request, *args, **kwargs):
-        return self.update(request, *args, **kwargs)
-
-    def patch(self, request, *args, **kwargs):
-        return self.partial_update(request, *args, **kwargs)
-
-    def delete(self, request, *args, **kwargs):
-        return self.destroy(request, *args, **kwargs)
