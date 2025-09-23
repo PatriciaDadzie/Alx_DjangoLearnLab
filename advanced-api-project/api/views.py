@@ -6,13 +6,11 @@ from .models import Book
 from .serializers import BookSerializer
 
 
-class ListView(generics.ListCreateAPIView):
+class ListView(generics.ListAPIView):
     """
     GET -> list all books
-    POST -> create a new book
     Supports filtering, searching, and ordering.
-    Read-only for unauthenticated users, 
-    authenticated users can create.
+    Read-only for unauthenticated users.
     """
     queryset = Book.objects.all()
     serializer_class = BookSerializer
@@ -28,6 +26,7 @@ class ListView(generics.ListCreateAPIView):
 class UpdateView(generics.UpdateAPIView):
     """
     PUT/PATCH -> update a book
+    Requires authentication.
     """
     queryset = Book.objects.all()
     serializer_class = BookSerializer
@@ -37,6 +36,7 @@ class UpdateView(generics.UpdateAPIView):
 class DeleteView(generics.DestroyAPIView):
     """
     DELETE -> delete a book
+    Requires authentication.
     """
     queryset = Book.objects.all()
     serializer_class = BookSerializer
