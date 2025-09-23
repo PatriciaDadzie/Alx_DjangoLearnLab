@@ -6,7 +6,7 @@ from .models import Book
 from .serializers import BookSerializer
 
 
-class BookListCreateView(generics.ListCreateAPIView):
+class ListView(generics.ListCreateAPIView):
     """
     GET -> list all books
     POST -> create a new book
@@ -25,13 +25,18 @@ class BookListCreateView(generics.ListCreateAPIView):
     ordering = ['title']
 
 
-class BookDetailView(generics.RetrieveUpdateDestroyAPIView):
+class UpdateView(generics.UpdateAPIView):
     """
-    GET -> retrieve a book
     PUT/PATCH -> update a book
+    """
+    queryset = Book.objects.all()
+    serializer_class = BookSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+
+class DeleteView(generics.DestroyAPIView):
+    """
     DELETE -> delete a book
-    Read-only for unauthenticated users,
-    authenticated users can modify or delete.
     """
     queryset = Book.objects.all()
     serializer_class = BookSerializer
