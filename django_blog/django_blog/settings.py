@@ -77,14 +77,11 @@ WSGI_APPLICATION = 'django_blog.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'blogdb',
-        'USER': 'postgres',
-        'PASSWORD': 'yourpassword',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / "db.sqlite3",
     }
 }
+
 
 
 
@@ -125,6 +122,14 @@ USE_TZ = True
 STATIC_URL = '/static/'
 import os
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "blog/static")]
+
+# Media files (user uploads)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / "media"
+
+# Authentication redirects
+LOGIN_REDIRECT_URL = 'blog:profile'
+LOGOUT_REDIRECT_URL = 'blog:login'
 
 
 # Default primary key field type
