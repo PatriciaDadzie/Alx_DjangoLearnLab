@@ -1,0 +1,17 @@
+{% extends "blog/base.html" %}
+{% block title %}{{ post.title }} - Django Blog{% endblock %}
+{% block content %}
+  <article class="post-detail">
+    <h1>{{ post.title }}</h1>
+    <p class="meta">By {{ post.author.username }} — {{ post.published_date|date:"M d, Y H:i" }}</p>
+    <div class="content">{{ post.content|linebreaks }}</div>
+
+    {% if user == post.author %}
+      <p class="author-actions">
+        <a class="btn" href="{% url 'blog:post-update' post.pk %}">Edit</a>
+        <a class="btn danger" href="{% url 'blog:post-delete' post.pk %}">Delete</a>
+      </p>
+    {% endif %}
+    <p><a href="{% url 'blog:post-list' %}">Back to all posts</a></p>
+  </article>
+{% endblock %}
