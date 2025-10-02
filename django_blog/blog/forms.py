@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
+from taggit.forms import TagWidget   # ✅ import TagWidget
 from .models import Profile, Post, Comment
 
 
@@ -30,12 +31,15 @@ class ProfileUpdateForm(forms.ModelForm):
 
 
 # ----------------------
-# Post Form (with django-taggit)
+# Post Form (with TagWidget)
 # ----------------------
 class PostForm(forms.ModelForm):
     class Meta:
         model = Post
-        fields = ["title", "content", "tags"]   # 'tags' comes from taggit
+        fields = ["title", "content", "tags"]
+        widgets = {
+            "tags": TagWidget(),   
+        }
 
 
 # ----------------------
