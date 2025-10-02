@@ -1,3 +1,4 @@
+# blog/urls.py
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from . import views
@@ -19,20 +20,11 @@ urlpatterns = [
     path("post/<int:pk>/delete/", views.PostDeleteView.as_view(), name="post-delete"),
 
     # Comment CRUD
-    path("post/<int:pk>/comments/new/", views.add_comment, name="add-comment"),
-    path("comments/<int:pk>/edit/", views.CommentUpdateView.as_view(), name="comment-update"),
-    path("comments/<int:pk>/delete/", views.CommentDeleteView.as_view(), name="comment-delete"),
-
-    # Comment URLs
-    path("post/<int:pk>/comment/new/", views.CommentCreateView.as_view(), name="comment-create"),
+    path("post/<int:pk>/comment/add/", views.CommentCreateView.as_view(), name="comment-add"),
     path("comment/<int:pk>/update/", views.CommentUpdateView.as_view(), name="comment-update"),
     path("comment/<int:pk>/delete/", views.CommentDeleteView.as_view(), name="comment-delete"),
 
-
-    path("tag/<str:tag_name>/", views.TagPostListView.as_view(), name="posts-by-tag"),
-    path("search/", views.SearchResultsView.as_view(), name="search-results"),
-    path("search/", views.PostSearchView.as_view(), name="post-search"),
-
-    
-
+    # Search + Tag Filtering
+    path("search/", views.search_posts, name="search"),  
+    path("tags/<slug:tag_slug>/", views.PostByTagListView.as_view(), name="posts-by-tag"),
 ]
