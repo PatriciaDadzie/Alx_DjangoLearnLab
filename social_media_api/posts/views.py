@@ -1,3 +1,4 @@
+# posts/views.py
 
 from rest_framework import viewsets, permissions, filters, generics
 from django_filters.rest_framework import DjangoFilterBackend
@@ -44,13 +45,17 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 
 class FeedView(generics.ListAPIView):
+    """
+    Returns a paginated feed of posts from users that the authenticated user follows.
+    Ordered by most recent first.
+    """
     serializer_class = PostSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
         user = self.request.user
-        followed_users = user.following.all()
+        followed_users = user.following.all()  # users current user follows
         return (
             Post.objects.filter(author__in=followed_users)
             .select_related('author')
