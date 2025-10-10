@@ -59,13 +59,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
-    # Third-party apps
     'rest_framework',
     'rest_framework.authtoken',
     'django_filters',
-
-    # Local apps
     'accounts',
     'posts',
     'notifications',
@@ -114,10 +110,16 @@ WSGI_APPLICATION = 'social_media_api.wsgi.application'
 # DATABASE CONFIGURATION
 # -------------------------------------------------------------------
 DATABASES = {
-    "default": dj_database_url.parse(
-        env("DATABASE_URL", default="sqlite:///db.sqlite3"), conn_max_age=600
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': env('DB_NAME', default='social_media_db'),
+        'USER': env('DB_USER', default='postgres'),
+        'PASSWORD': env('DB_PASSWORD', default='postgres'),
+        'HOST': env('DB_HOST', default='localhost'),
+        'PORT': env('DB_PORT', default='5432'),
+    }
 }
+
 
 # -------------------------------------------------------------------
 # PASSWORD VALIDATION
