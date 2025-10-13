@@ -1,13 +1,21 @@
-from django.db import models
+# social_media_api/accounts/models.py
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-# Create your models here.
-class User(AbstractUser):
-    bio = models.TextField(blank=True)
+
+class CustomUser(AbstractUser):
+    """
+    Custom user model that extends Django's AbstractUser.
+    Adds extra fields for bio, profile picture, and following functionality.
+    """
+    bio = models.TextField(blank=True, null=True)
     profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
-    # followers: ManyToMany to self, non-symmetrical (A follows B doesn't mean B follows A)
-    followers = models.ManyToManyField('self', symmetrical=False, related_name='following', blank=True)
+    following = models.ManyToManyField(
+        'self',
+        symmetrical=False,
+        related_name='followers',
+        blank=True
+    )
 
     def __str__(self):
         return self.username

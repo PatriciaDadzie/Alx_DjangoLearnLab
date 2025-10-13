@@ -1,59 +1,60 @@
-# posts/serializers.py
-
 from rest_framework import serializers
-from django.contrib.auth import get_user_model
-from .models import Post, Comment
+from django.contrib.auth import authenticate, get_user_model
 
 User = get_user_model()
 
 
-class CommentSerializer(serializers.ModelSerializer):
-    author = serializers.StringRelatedField(read_only=True)
-    author_id = serializers.PrimaryKeyRelatedField(source='author', read_only=True)
+class RegisterSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
 
     class Meta:
-        model = Comment
-        fields = ('id', 'post', 'author', 'author_id', 'content', 'created_at', 'updated_at')
-        read_only_fields = ('id', 'author', 'author_id', 'created_at', 'updated_at')
+        model = User
+        fields = ['id', 'username', 'email', 'password', 'profile_picture']
+        read_only_fields = ['id']
+
+    def create(self, validated_data):
+        user = User.objects.create_user(
+            username=validated_data['username'],
+            email=validated_data['email'],
+            password=validated_data['password'],
+            profile_picture=validated_data.get('profile_picture')
+        )
+        return user
 
 
-class PostSerializer(serializers.ModelSerializer):
-    author = serializers.StringRelatedField(read_only=True)
-    author_id = serializers.PrimaryKeyRelatedField(source='author', read_only=True)
-    comments = CommentSerializer(many=True, read_only=True)
-    author_profile_picture = serializers.SerializerMethodField()
-    author_followers_count = serializers.SerializerMethodField()
+class LoginSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
+    username = serializers.CharField(read_only=True)
+    id = serializers.IntegerField(read_only=True)
+
+    def validate(self, data):
+        email = data.get("email")
+        password = data.get("password")
+
+        if email and password:
+            # Authenticate using email as username
+            user = authenticate(username=email, password=password)
+            if not user:
+                raise serializers.ValidationError("Invalid email or password.")
+        else:
+            raise serializers.ValidationError("Both email and password are required.")
+
+        data["user"] = user
+        return data
+
+
+class UserSerializer(serializers.ModelSerializer):
+    followers_count = serializers.SerializerMethodField()
+    following_count = serializers.SerializerMethodField()
 
     class Meta:
-        model = Post
-        fields = (
-            'id',
-            'author',
-            'author_id',
-            'author_profile_picture',
-            'author_followers_count',
-            'title',
-            'content',
-            'comments',
-            'created_at',
-            'updated_at',
-        )
-        read_only_fields = (
-            'id',
-            'author',
-            'author_id',
-            'author_profile_picture',
-            'author_followers_count',
-            'comments',
-            'created_at',
-            'updated_at',
-        )
+        model = User
+        fields = ['id', 'username', 'email', 'profile_picture', 'followers_count', 'following_count']
+        read_only_fields = ['id', 'followers_count', 'following_count']
 
-    def get_author_profile_picture(self, obj):
-        request = self.context.get('request')
-        if obj.author.profile_picture:
-            return request.build_absolute_uri(obj.author.profile_picture.url)
-        return None
+    def get_followers_count(self, obj):
+        return obj.followers.count()
 
-    def get_author_followers_count(self, obj):
-        return obj.author.followers.count()
+    def get_following_count(self, obj):
+        return obj.following.count()
