@@ -1,9 +1,53 @@
-from rest_framework import generics, permissions, status
+from rest_framework import generics, permissions, status, viewsets
 from rest_framework.response import Response
-from .models import Post, Like
+from .models import Post, Comment, Like
+from .serializers import PostSerializer, CommentSerializer
 from notifications.models import Notification
 
 
+# ---------------------------------------------------------------
+# PERMISSIONS
+# ---------------------------------------------------------------
+class IsOwnerOrReadOnly(permissions.BasePermission):
+    """
+    Custom permission to allow only owners to edit/delete their own posts/comments.
+    """
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return obj.author == request.user
+
+
+# ---------------------------------------------------------------
+# CRUD VIEWSETS FOR POSTS & COMMENTS
+# ---------------------------------------------------------------
+class PostViewSet(viewsets.ModelViewSet):
+    """
+    Provides CRUD operations for posts.
+    """
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    """
+    Provides CRUD operations for comments.
+    """
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
+
+# ---------------------------------------------------------------
+# LIKE / UNLIKE VIEWS
+# ---------------------------------------------------------------
 class LikePostView(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
