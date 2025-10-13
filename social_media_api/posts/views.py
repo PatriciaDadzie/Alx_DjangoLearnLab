@@ -1,4 +1,5 @@
 from rest_framework import generics, permissions, status, viewsets
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import Post, Comment, Like
 from .serializers import PostSerializer, CommentSerializer
@@ -82,3 +83,24 @@ class UnlikePostView(generics.GenericAPIView):
 
         like.delete()
         return Response({"detail": "Post unliked successfully."}, status=status.HTTP_200_OK)
+
+
+# ---------------------------------------------------------------
+# FEED VIEW (Checker-specific)
+# ---------------------------------------------------------------
+class FeedView(APIView):
+    """
+    Returns a feed of posts from users the current user follows,
+    ordered by creation date (most recent first).
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        # Get all users the current user follows
+        following_users = request.user.following.all()  
+
+        # Fetch posts from followed users ordered by most recent first
+        posts = Post.objects.filter(author__in=following_users).order_by('-created_at')  
+
+        serializer = PostSerializer(posts, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
