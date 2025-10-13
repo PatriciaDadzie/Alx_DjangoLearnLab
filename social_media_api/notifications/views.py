@@ -1,27 +1,41 @@
-from rest_framework.views import APIView
-from .models import Post
-from .serializers import PostSerializer
+# notifications/views.py
+from rest_framework import generics, permissions, status
 from rest_framework.response import Response
-from rest_framework import permissions, status
+from .models import Notification
+from .serializers import NotificationSerializer
 
-
-# ---------------------------------------------------------------
-# FEED VIEW
-# ---------------------------------------------------------------
-class FeedView(APIView):
+class NotificationListView(generics.ListAPIView):
     """
-    Returns a feed of posts from users the current user follows,
-    ordered by creation date (most recent first).
+    List notifications for current user, unread first.
     """
+    serializer_class = NotificationSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request, *args, **kwargs):
-        # Get all users the current user follows
-        following_users = request.user.following.all()
+    def get_queryset(self):
+        return Notification.objects.filter(recipient=self.request.user).order_by('read', '-timestamp')
 
-        # Fetch posts from those users
-        posts = Post.objects.filter(author__in=following_users).order_by('-created_at')
 
-        # Serialize and return the posts
-        serializer = PostSerializer(posts, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+class MarkNotificationReadView(generics.UpdateAPIView):
+    """
+    Mark a notification as read.
+    """
+    serializer_class = NotificationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = Notification.objects.all()
+    lookup_field = 'pk'
+
+    def patch(self, request, *args, **kwargs):
+        notification = self.get_object()
+        if notification.recipient != request.user:
+            return Response({"detail": "Not allowed."}, status=status.HTTP_403_FORBIDDEN)
+        notification.read = True
+        notification.save(update_fields=['read'])
+        return Response(self.get_serializer(notification).data, status=status.HTTP_200_OK)
+
+
+class MarkAllReadView(generics.GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        Notification.objects.filter(recipient=request.user, read=False).update(read=True)
+        return Response({"detail": "All notifications marked as read."}, status=status.HTTP_200_OK)
